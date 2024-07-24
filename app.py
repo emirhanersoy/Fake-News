@@ -1,5 +1,11 @@
 import streamlit as st
 import pickle
+import os
+
+# Dosya yollarını kontrol etme
+current_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(current_dir, 'model.pkl')
+vectorizer_path = os.path.join(current_dir, 'tfidf_vectorizer.pkl')
 
 # Kaydedilen modeli ve vektörleştiriciyi yükleme
 with open('model.pkl', 'rb') as model_file:
