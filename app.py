@@ -1,34 +1,29 @@
-import streamlit as st
+from flask import Flask, render_template, request
 import pickle
-import os
 
-# Dosya yollarını kontrol etme
-current_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(current_dir, 'model.pkl')
-vectorizer_path = os.path.join(current_dir, 'tfidf_vectorizer.pkl')
+app = Flask(__name__)
 
-# Kaydedilen modeli ve vektörleştiriciyi yükleme
-with open('model.pkl', 'rb') as model_file:
+# Model ve TF-IDF vektörleştiriciyi yükleme
+with open('model.pk1', 'rb') as model_file:
     pac = pickle.load(model_file)
 
 with open('tfidf_vectorizer.pkl', 'rb') as vectorizer_file:
     tfidf_vectorizer = pickle.load(vectorizer_file)
 
-# Streamlit başlığı
-st.title("Fake News Detection")
+def predict_news(news_text):
+    news_tfidf = tfidf_vectorizer.transform([news_text])
+    prediction = pac.predict(news_tfidf)
+    return prediction[0]
 
-# Kullanıcıdan haber metni girişi
-user_input = st.text_area("Haberi girin:")
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-if st.button("Tahmin Et"):
-    if user_input:
-        # Kullanıcı girdisini vektörize etme
-        news_tfidf = tfidf_vectorizer.transform([user_input])
-        
-        # Tahmin yapma
-        prediction = pac.predict(news_tfidf)
-        
-        # Sonucu gösterme
-        st.write(f"Bu haber: **{prediction[0]}**")
-    else:
-        st.write("Lütfen bir haber metni girin.")
+@app.route('/predict', methods=['POST'])
+def predict():
+    news_text = request.form['news_text']
+    prediction = predict_news(news_text)
+    return render_template('index.html', prediction=prediction)
+
+if __name__ == '__main__':
+    app.run(debug=True)
